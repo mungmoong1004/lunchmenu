@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍽 점심메뉴 루렛 🍽</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: 'Pretendard', 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: white;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+    }
+
+    #container {
+      position: relative;
+      width: 500px;
+      height: 500px;
+    }
+
+    canvas {
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    .pointer {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%) rotate(180deg);
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 40px solid #e74c3c;
+      z-index: 10;
+    }
+
+    #spinBtn, #addMenuBtn {
+      margin-top: 20px;
+      padding: 14px 36px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-right: 10px;
+    }
+
+    #spinBtn:hover, #addMenuBtn:hover {
+      transform: scale(1.07);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    #resultModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 30px 40px;
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      border-radius: 12px;
+      font-size: 22px;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #resultModal button {
+      margin-top: 20px;
+      padding: 10px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+    }
+
+    #menuList {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 480px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 18px;
+    }
+
+    #menuList h2 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #444;
+    }
+
+    #menuList ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🍽 점심메뉴 루렛 🍽</h1>
+  <div id="container">
+    <div class="pointer"></div>
+    <canvas id="roulette" width="500" height="500"></canvas>
+  </div>
+  <div>
+    <button id="spinBtn">루렛 돌리기! 🎯</button>
+    <button id="addMenuBtn">새 메뉴 추가</button>
+  </div>
+
+  <div id="resultModal">
+    <div id="resultText"></div>
+    <button onclick="closeModal()">확인</button>
+  </div>
+
+  <div id="menuList">
+    <h2>🎵 루렛에 등록된 점심메뉴</h2>
+    <ul id="menuItems"></ul>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("roulette");
+    const ctx = canvas.getContext("2d");
+    const radius = canvas.width / 2;
+    const center = { x: radius, y: radius };
+
+    const menus = [
+      "돌섿비빔밥", "돌섿제욱볶음밥", "돌섿김치볶음밥",
+      "돌섿불고기밥", "돌섿고치장비빔밥", "돌섿야체밥",
+      "돌섿오징어밥", "돌섿두부김치밥"
+    ];
+
+    let segmentAngle;
+    let currentAngle = 0;
+
+    function drawRoulette() {
+      segmentAngle = (2 * Math.PI) / menus.length;
+      for (let i = 0; i < menus.length; i++) {
+        const startAngle = i * segmentAngle;
+        const endAngle = startAngle + segmentAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(center.x, center.y);
+        ctx.arc(center.x, center.y, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = `hsl(${(i * 360) / menus.length}, 70%, 75%)`;
+        ctx.fill();
+
+        const textAngle = startAngle + segmentAngle / 2;
+        const textX = center.x + (radius * 0.65) * Math.cos(textAngle);
+        const textY = center.y + (radius * 0.65) * Math.sin(textAngle);
+
+        ctx.save();
+        ctx.translate(textX, textY);
+        ctx.rotate(textAngle);
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#333";
+        ctx.font = "bold 16px Arial";
+        ctx.fillText(menus[i], 0, 0);
+        ctx.restore();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(center.x, center.y);
+      ctx.rotate(currentAngle);
+      ctx.translate(-center.x, -center.y);
+      drawRoulette();
+      ctx.restore();
+    }
+
+    function spinRoulette() {
+      const randomTurns = Math.floor(Math.random() * 3) + 5;
+      const targetSegment = Math.floor(Math.random() * menus.length);
+      const finalAngle = (2 * Math.PI * randomTurns) - (targetSegment * segmentAngle) - segmentAngle / 2;
+
+      gsap.to(rouletteState, {
+        duration: 5,
+        angle: finalAngle,
+        ease: "power3.out",
+        onUpdate: () => {
+          currentAngle = rouletteState.angle;
+          draw();
+        },
+        onComplete: () => {
+          const selected = menus[targetSegment];
+          confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+          setTimeout(() => showModal(selected), 200);
+        }
+      });
+    }
+
+    function showModal(selected) {
+      const modal = document.getElementById('resultModal');
+      const text = document.getElementById('resultText');
+      text.textContent = `오늘의 점심은 "${selected}" 입니다!`;
+      modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('resultModal').style.display = 'none';
+    }
+
+    function updateMenuList() {
+      const menuItems = document.getElementById('menuItems');
+      menuItems.innerHTML = "";
+      menus.forEach(menu => {
+        const li = document.createElement('li');
+        li.textContent = menu;
+        menuItems.appendChild(li);
+      });
+    }
+
+    document.getElementById("spinBtn").addEventListener("click", spinRoulette);
+    canvas.addEventListener("click", spinRoulette);
+
+    document.getElementById("addMenuBtn").addEventListener("click", () => {
+      const newMenu = prompt("추가할 점심 메뉴를 입력해주세요:");
+      if (newMenu && !menus.includes(newMenu)) {
+        menus.push(newMenu);
+        updateMenuList();
+        draw();
+      }
+    });
+
+    const rouletteState = { angle: 0 };
+
+    draw();
+    updateMenuList();
+  </script>
+</body>
+</html>
