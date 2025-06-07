@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🍽 점심메뉴 루렛 🍽</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🍽 점심메뉴 룰렛 🍽</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -15,14 +15,14 @@
       flex-direction: column;
       height: 100vh;
       margin: 0;
-      background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+      background: linear-gradient(135deg, #f9d423, #ff4e50);
     }
 
     h1 {
-      font-size: 2rem;
+      font-size: 2.5rem;
       margin-bottom: 20px;
-      color: white;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+      color: #fff;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
     }
 
     #container {
@@ -40,35 +40,34 @@
 
     .pointer {
       position: absolute;
-      top: -20px;
+      top: -24px;
       left: 50%;
-      transform: translateX(-50%) rotate(180deg);
+      transform: translateX(-50%);
       width: 0;
       height: 0;
       border-left: 20px solid transparent;
       border-right: 20px solid transparent;
-      border-top: 40px solid #e74c3c;
+      border-bottom: 40px solid #000;
       z-index: 10;
     }
 
-    #spinBtn, #addMenuBtn {
+    button {
       margin-top: 20px;
-      padding: 14px 36px;
-      font-size: 18px;
+      padding: 12px 18px;
+      font-size: 15px;
       font-weight: bold;
       border: none;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #43cea2, #185a9d);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
       color: white;
+      margin-right: 8px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      margin-right: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
     }
 
-    #spinBtn:hover, #addMenuBtn:hover {
-      transform: scale(1.07);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    button:hover {
+      transform: scale(1.05);
     }
 
     #resultModal {
@@ -80,55 +79,45 @@
       background: #fff;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
       border-radius: 12px;
-      font-size: 22px;
+      font-size: 20px;
       z-index: 1000;
       display: none;
       flex-direction: column;
       align-items: center;
     }
 
-    #resultModal button {
-      margin-top: 20px;
-      padding: 10px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      border: none;
-      border-radius: 10px;
-      background-color: #3498db;
-      color: white;
-      cursor: pointer;
-    }
-
     #menuList {
       margin-top: 20px;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 480px;
+      background: rgba(255,255,255,0.95);
+      padding: 16px;
+      border-radius: 10px;
+      max-width: 500px;
+      font-size: 17px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      font-size: 18px;
-    }
-
-    #menuList h2 {
-      margin-top: 0;
-      font-size: 20px;
-      color: #444;
     }
 
     #menuList ul {
       padding-left: 20px;
     }
+
+    #menuList h2 {
+      margin: 0 0 10px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
-  <h1>🍽 점심메뉴 루렛 🍽</h1>
+  <h1>🍽 점심메뉴 룰렛 🍽</h1>
   <div id="container">
     <div class="pointer"></div>
     <canvas id="roulette" width="500" height="500"></canvas>
   </div>
+
   <div>
-    <button id="spinBtn">루렛 돌리기! 🎯</button>
-    <button id="addMenuBtn">새 메뉴 추가</button>
+    <button id="spinBtn">룰렛 돌리기! 🎯</button>
+    <button id="addMenuBtn">메뉴 추가</button>
+    <button id="removeMenuBtn">메뉴 삭제</button>
+    <button id="editMenuBtn">메뉴 수정</button>
   </div>
 
   <div id="resultModal">
@@ -137,7 +126,7 @@
   </div>
 
   <div id="menuList">
-    <h2>🎵 루렛에 등록된 점심메뉴</h2>
+    <h2>🍱 현재 메뉴</h2>
     <ul id="menuItems"></ul>
   </div>
 
@@ -148,13 +137,15 @@
     const center = { x: radius, y: radius };
 
     const menus = [
-      "돌섿비빔밥", "돌섿제욱볶음밥", "돌섿김치볶음밥",
-      "돌섿불고기밥", "돌섿고치장비빔밥", "돌섿야체밥",
-      "돌섿오징어밥", "돌섿두부김치밥"
+      "한식", "중식", "일식", "양식",
+      "김치찌개", "순대국", "부대찌개",
+      "떡볶이", "샤브샤브"
     ];
 
     let segmentAngle;
     let currentAngle = 0;
+
+    const rouletteState = { angle: 0 };
 
     function drawRoulette() {
       segmentAngle = (2 * Math.PI) / menus.length;
@@ -170,15 +161,15 @@
         ctx.fill();
 
         const textAngle = startAngle + segmentAngle / 2;
-        const textX = center.x + (radius * 0.65) * Math.cos(textAngle);
-        const textY = center.y + (radius * 0.65) * Math.sin(textAngle);
+        const textX = center.x + (radius * 0.52) * Math.cos(textAngle);
+        const textY = center.y + (radius * 0.52) * Math.sin(textAngle);
 
         ctx.save();
         ctx.translate(textX, textY);
-        ctx.rotate(textAngle);
         ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillStyle = "#333";
-        ctx.font = "bold 16px Arial";
+        ctx.font = "bold 14px Arial";
         ctx.fillText(menus[i], 0, 0);
         ctx.restore();
       }
@@ -209,17 +200,15 @@
         },
         onComplete: () => {
           const selected = menus[targetSegment];
-          confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
-          setTimeout(() => showModal(selected), 200);
+          confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+          showModal(selected);
         }
       });
     }
 
     function showModal(selected) {
-      const modal = document.getElementById('resultModal');
-      const text = document.getElementById('resultText');
-      text.textContent = `오늘의 점심은 "${selected}" 입니다!`;
-      modal.style.display = 'flex';
+      document.getElementById('resultText').textContent = `오늘의 점심은 "${selected}"입니다!`;
+      document.getElementById('resultModal').style.display = 'flex';
     }
 
     function closeModal() {
@@ -227,12 +216,12 @@
     }
 
     function updateMenuList() {
-      const menuItems = document.getElementById('menuItems');
-      menuItems.innerHTML = "";
+      const list = document.getElementById('menuItems');
+      list.innerHTML = "";
       menus.forEach(menu => {
         const li = document.createElement('li');
         li.textContent = menu;
-        menuItems.appendChild(li);
+        list.appendChild(li);
       });
     }
 
@@ -240,7 +229,7 @@
     canvas.addEventListener("click", spinRoulette);
 
     document.getElementById("addMenuBtn").addEventListener("click", () => {
-      const newMenu = prompt("추가할 점심 메뉴를 입력해주세요:");
+      const newMenu = prompt("추가할 점심 메뉴를 입력하세요:");
       if (newMenu && !menus.includes(newMenu)) {
         menus.push(newMenu);
         updateMenuList();
@@ -248,7 +237,28 @@
       }
     });
 
-    const rouletteState = { angle: 0 };
+    document.getElementById("removeMenuBtn").addEventListener("click", () => {
+      const toRemove = prompt("삭제할 메뉴명을 입력하세요:");
+      const index = menus.indexOf(toRemove);
+      if (index > -1) {
+        menus.splice(index, 1);
+        updateMenuList();
+        draw();
+      }
+    });
+
+    document.getElementById("editMenuBtn").addEventListener("click", () => {
+      const oldMenu = prompt("수정할 메뉴명을 입력하세요:");
+      const index = menus.indexOf(oldMenu);
+      if (index > -1) {
+        const newMenu = prompt("새 메뉴명을 입력하세요:");
+        if (newMenu) {
+          menus[index] = newMenu;
+          updateMenuList();
+          draw();
+        }
+      }
+    });
 
     draw();
     updateMenuList();
