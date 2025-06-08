@@ -1,267 +1,495 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🍽 점심메뉴 룰렛 🍽</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <style>
-    body {
-      font-family: 'Pretendard', 'Arial', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      height: 100vh;
-      margin: 0;
-      background: linear-gradient(135deg, #f9d423, #ff4e50);
+import React, { useState, useRef, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, RotateCcw, Trophy, Utensils } from 'lucide-react';
+
+const LunchRoulette = () => {
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [result, setResult] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const wheelRef = useRef(null);
+  const animationRef = useRef(null);
+
+  const healthTips = [
+    {
+      icon: "🥗",
+      category: "균형 식사",
+      tip: "탄수화물, 단백질, 채소를 골고루 섭취하면 하루 종일 에너지가 넘쳐요!"
+    },
+    {
+      icon: "💧",
+      category: "수분 섭취", 
+      tip: "하루 8잔의 물로 몸속 독소를 깔끔하게 배출하세요!"
+    },
+    {
+      icon: "🚶‍♂️",
+      category: "꾸준한 운동",
+      tip: "하루 30분 걷기만 해도 심장병, 당뇨 예방에 큰 도움이 됩니다!"
+    },
+    {
+      icon: "😴", 
+      category: "충분한 수면",
+      tip: "하루 7~8시간 숙면으로 면역력을 높이고 스트레스를 해소하세요!"
     }
+  ];
 
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
-      color: #fff;
-      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+  const menus = [
+    { 
+      name: '김치찌개', 
+      emoji: '🌶️', 
+      color: 'bg-red-500',
+      messages: [
+        "뜨끈한 국물이 몸과 마음을 따뜻하게 해줄 거예요 💕",
+        "오늘 같은 날엔 매콤한 김치찌개가 딱이죠! 🔥",
+        "할머니가 끓여주던 그 맛이 그리워지는 날이네요 👵💝",
+        "김치의 깊은 맛이 당신의 하루를 완성시켜줄 거예요 ✨"
+      ]
+    },
+    { 
+      name: '순대국', 
+      emoji: '🍲', 
+      color: 'bg-cyan-500',
+      messages: [
+        "진한 국물이 지친 당신을 위로해줄 거예요 🤗",
+        "따뜻한 순대국 한 그릇이면 모든 피로가 사라져요 😌",
+        "오늘은 든든한 한 끼가 필요한 날이에요! 💪",
+        "깊고 진한 맛이 당신의 마음까지 채워줄 거예요 ❤️"
+      ]
+    },
+    { 
+      name: '부대찌개', 
+      emoji: '🍜', 
+      color: 'bg-blue-500',
+      messages: [
+        "알록달록한 재료들이 당신의 기분을 밝게 만들어줄 거예요 🌈",
+        "친구들과 나눠먹고 싶은 그런 맛이죠! 👫",
+        "한 숟가락에 담긴 추억의 맛을 느껴보세요 🥄💭",
+        "푸짐한 부대찌개로 오늘 하루를 든든하게! 🎉"
+      ]
+    },
+    { 
+      name: '떡볶이', 
+      emoji: '🍘', 
+      color: 'bg-orange-500',
+      messages: [
+        "쫄깃한 떡이 당신의 스트레스를 모두 날려버릴 거예요 💨",
+        "달콤매콤한 맛이 어린 시절로 데려가줄 거예요 🎈",
+        "오늘은 간식이 아닌 당당한 한 끼! 😋",
+        "빨간 소스가 당신의 하루에 활력을 불어넣어줄 거예요 🔴✨"
+      ]
+    },
+    { 
+      name: '샤브샤브', 
+      emoji: '🥩', 
+      color: 'bg-purple-500',
+      messages: [
+        "신선한 채소와 고기가 당신을 건강하게 만들어줄 거예요 🥬💚",
+        "정성스럽게 담근 한 입이 마음까지 정화시켜줄 거예요 🧘‍♀️",
+        "오늘은 자신에게 특별한 선물을 해주세요 🎁",
+        "깔끔하고 담백한 맛이 당신의 품격을 높여줄 거예요 ✨👑"
+      ]
+    },
+    { 
+      name: '한식', 
+      emoji: '🍚', 
+      color: 'bg-green-500',
+      messages: [
+        "정갈한 한상차림이 당신의 마음을 편안하게 해줄 거예요 🕊️",
+        "어머니의 손맛이 그리운 오늘, 한식이 딱이에요 👩‍🍳💕",
+        "건강한 밥상이 당신의 몸과 마음을 챙겨줄 거예요 🌿",
+        "전통의 맛이 당신의 뿌리를 생각나게 해줄 거예요 🏠"
+      ]
+    },
+    { 
+      name: '중식', 
+      emoji: '🥢', 
+      color: 'bg-red-400',
+      messages: [
+        "기름진 맛이 당신의 스트레스를 달래줄 거예요 😊",
+        "오늘은 조금 특별한 맛을 원하시는군요! 🎭",
+        "볶음밥 한 접시면 모든 고민이 해결될 거예요 🍛✨",
+        "중국집 특유의 그 맛이 향수를 불러일으킬 거예요 🏮"
+      ]
+    },
+    { 
+      name: '일식', 
+      emoji: '🍣', 
+      color: 'bg-yellow-400',
+      messages: [
+        "신선하고 깔끔한 맛이 당신의 감각을 깨워줄 거예요 🌸",
+        "정성스럽게 만든 한 점 한 점이 예술이에요 🎨",
+        "오늘은 자신을 위한 특별한 시간을 가져보세요 ⛩️",
+        "섬세한 맛이 당신의 하루를 우아하게 만들어줄 거예요 🎋"
+      ]
+    },
+    { 
+      name: '양식', 
+      emoji: '🍝', 
+      color: 'bg-blue-400',
+      messages: [
+        "이국적인 맛이 당신의 일상에 변화를 줄 거예요 🌍",
+        "로맨틱한 분위기 속에서 즐기는 한 끼! 🕯️💕",
+        "오늘은 조금 더 세련된 맛을 원하시는군요 🥂",
+        "서양의 풍미가 당신의 마음을 설레게 해줄 거예요 💃"
+      ]
+    },
+    { 
+      name: '기타', 
+      emoji: '🍕', 
+      color: 'bg-teal-400',
+      messages: [
+        "새로운 도전이 당신의 하루를 특별하게 만들어줄 거예요 🚀",
+        "예상치 못한 맛의 발견이 기다리고 있어요! 🔍✨",
+        "오늘은 평소와 다른 선택을 해보는 게 어떨까요? 🎲",
+        "모험심이 가득한 당신에게 딱 맞는 선택이에요! 🗺️💫"
+      ]
     }
+  ];
 
-    #container {
-      position: relative;
-      width: 500px;
-      height: 500px;
+  const easeOutExpo = (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
+  const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  const createSparkles = () => {
+    const container = document.querySelector('.sparkle-container');
+    if (!container) return;
+    
+    for (let i = 0; i < 30; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'absolute w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full animate-ping pointer-events-none';
+      sparkle.style.left = Math.random() * 100 + '%';
+      sparkle.style.top = Math.random() * 100 + '%';
+      sparkle.style.animationDelay = Math.random() * 1 + 's';
+      sparkle.style.animationDuration = Math.random() * 1 + 1 + 's';
+      container.appendChild(sparkle);
+      
+      setTimeout(() => sparkle.remove(), 4000);
     }
+  };
 
-    canvas {
-      border-radius: 50%;
-      background: #fff;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    }
-
-    .pointer {
-      position: absolute;
-      top: -24px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 40px solid #000;
-      z-index: 10;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 12px 18px;
-      font-size: 15px;
-      font-weight: bold;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: white;
-      margin-right: 8px;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      transition: all 0.2s ease;
-    }
-
-    button:hover {
-      transform: scale(1.05);
-    }
-
-    #resultModal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 30px 40px;
-      background: #fff;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      border-radius: 12px;
-      font-size: 20px;
-      z-index: 1000;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    #menuList {
-      margin-top: 20px;
-      background: rgba(255,255,255,0.95);
-      padding: 16px;
-      border-radius: 10px;
-      max-width: 500px;
-      font-size: 17px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    #menuList ul {
-      padding-left: 20px;
-    }
-
-    #menuList h2 {
-      margin: 0 0 10px;
-      color: #333;
-    }
-  </style>
-</head>
-<body>
-  <h1>🍽 점심메뉴 룰렛 🍽</h1>
-  <div id="container">
-    <div class="pointer"></div>
-    <canvas id="roulette" width="500" height="500"></canvas>
-  </div>
-
-  <div>
-    <button id="spinBtn">룰렛 돌리기! 🎯</button>
-    <button id="addMenuBtn">메뉴 추가</button>
-    <button id="removeMenuBtn">메뉴 삭제</button>
-    <button id="editMenuBtn">메뉴 수정</button>
-  </div>
-
-  <div id="resultModal">
-    <div id="resultText"></div>
-    <button onclick="closeModal()">확인</button>
-  </div>
-
-  <div id="menuList">
-    <h2>🍱 현재 메뉴</h2>
-    <ul id="menuItems"></ul>
-  </div>
-
-  <script>
-    const canvas = document.getElementById("roulette");
-    const ctx = canvas.getContext("2d");
-    const radius = canvas.width / 2;
-    const center = { x: radius, y: radius };
-
-    const menus = [
-      "한식", "중식", "일식", "양식",
-      "김치찌개", "순대국", "부대찌개",
-      "떡볶이", "샤브샤브"
-    ];
-
-    let segmentAngle;
-    let currentAngle = 0;
-
-    const rouletteState = { angle: 0 };
-
-    function drawRoulette() {
-      segmentAngle = (2 * Math.PI) / menus.length;
-      for (let i = 0; i < menus.length; i++) {
-        const startAngle = i * segmentAngle;
-        const endAngle = startAngle + segmentAngle;
-
-        ctx.beginPath();
-        ctx.moveTo(center.x, center.y);
-        ctx.arc(center.x, center.y, radius, startAngle, endAngle);
-        ctx.closePath();
-        ctx.fillStyle = `hsl(${(i * 360) / menus.length}, 70%, 75%)`;
-        ctx.fill();
-
-        const textAngle = startAngle + segmentAngle / 2;
-        const textX = center.x + (radius * 0.52) * Math.cos(textAngle);
-        const textY = center.y + (radius * 0.52) * Math.sin(textAngle);
-
-        ctx.save();
-        ctx.translate(textX, textY);
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "#333";
-        ctx.font = "bold 14px Arial";
-        ctx.fillText(menus[i], 0, 0);
-        ctx.restore();
-      }
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.save();
-      ctx.translate(center.x, center.y);
-      ctx.rotate(currentAngle);
-      ctx.translate(-center.x, -center.y);
-      drawRoulette();
-      ctx.restore();
-    }
-
-    function spinRoulette() {
-      const randomTurns = Math.floor(Math.random() * 3) + 5;
-      const targetSegment = Math.floor(Math.random() * menus.length);
-      const finalAngle = (2 * Math.PI * randomTurns) - (targetSegment * segmentAngle) - segmentAngle / 2;
-
-      gsap.to(rouletteState, {
-        duration: 5,
-        angle: finalAngle,
-        ease: "power3.out",
-        onUpdate: () => {
-          currentAngle = rouletteState.angle;
-          draw();
-        },
-        onComplete: () => {
-          const selected = menus[targetSegment];
-          confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-          showModal(selected);
+  const animateWheel = useCallback((startRotation, endRotation, duration, easingFunc = easeOutQuart) => {
+    return new Promise((resolve) => {
+      const startTime = Date.now();
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        const easedProgress = easingFunc(progress);
+        const currentRotation = startRotation + (endRotation - startRotation) * easedProgress;
+        setRotation(currentRotation);
+        
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(animate);
+        } else {
+          resolve();
         }
-      });
-    }
-
-    function showModal(selected) {
-      document.getElementById('resultText').textContent = `오늘의 점심은 "${selected}"입니다!`;
-      document.getElementById('resultModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-      document.getElementById('resultModal').style.display = 'none';
-    }
-
-    function updateMenuList() {
-      const list = document.getElementById('menuItems');
-      list.innerHTML = "";
-      menus.forEach(menu => {
-        const li = document.createElement('li');
-        li.textContent = menu;
-        list.appendChild(li);
-      });
-    }
-
-    document.getElementById("spinBtn").addEventListener("click", spinRoulette);
-    canvas.addEventListener("click", spinRoulette);
-
-    document.getElementById("addMenuBtn").addEventListener("click", () => {
-      const newMenu = prompt("추가할 점심 메뉴를 입력하세요:");
-      if (newMenu && !menus.includes(newMenu)) {
-        menus.push(newMenu);
-        updateMenuList();
-        draw();
-      }
+      };
+      
+      animationRef.current = requestAnimationFrame(animate);
     });
+  }, []);
 
-    document.getElementById("removeMenuBtn").addEventListener("click", () => {
-      const toRemove = prompt("삭제할 메뉴명을 입력하세요:");
-      const index = menus.indexOf(toRemove);
-      if (index > -1) {
-        menus.splice(index, 1);
-        updateMenuList();
-        draw();
-      }
-    });
+  const spinWheel = async () => {
+    if (isSpinning) return;
+    
+    setIsSpinning(true);
+    setShowResult(false);
+    setResult(null);
 
-    document.getElementById("editMenuBtn").addEventListener("click", () => {
-      const oldMenu = prompt("수정할 메뉴명을 입력하세요:");
-      const index = menus.indexOf(oldMenu);
-      if (index > -1) {
-        const newMenu = prompt("새 메뉴명을 입력하세요:");
-        if (newMenu) {
-          menus[index] = newMenu;
-          updateMenuList();
-          draw();
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 100, 50]);
+    }
+
+    const currentRotation = rotation % 360;
+    const minSpins = 8;
+    const maxSpins = 12;
+    const spins = minSpins + Math.random() * (maxSpins - minSpins);
+    const finalAngle = Math.random() * 360;
+    const totalRotation = rotation + (spins * 360) + finalAngle;
+    
+    try {
+      await animateWheel(rotation, rotation + 360, 800, easeInOutCubic);
+      await animateWheel(rotation + 360, rotation + (spins - 2) * 360, 1200, (t) => t);
+      await animateWheel(rotation + (spins - 2) * 360, totalRotation, 3000, easeOutExpo);
+      
+      const finalRotation = totalRotation % 360;
+      const adjustedRotation = (360 - finalRotation) % 360;
+      const selectedIndex = Math.floor(adjustedRotation / 36);
+      const selectedMenu = menus[selectedIndex];
+      
+      const randomMessage = selectedMenu.messages[Math.floor(Math.random() * selectedMenu.messages.length)];
+
+      setTimeout(() => {
+        setResult({ name: selectedMenu.name, message: randomMessage });
+        setShowResult(true);
+        createSparkles();
+        
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100, 50, 200]);
         }
-      }
-    });
+        
+        setIsSpinning(false);
+      }, 500);
+      
+    } catch (error) {
+      setIsSpinning(false);
+    }
+  };
 
-    draw();
-    updateMenuList();
-  </script>
-</body>
-</html>
+  const resetWheel = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    setRotation(0);
+    setResult(null);
+    setShowResult(false);
+    setIsSpinning(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 p-4 flex items-center justify-center">
+      <div className="sparkle-container absolute inset-0 pointer-events-none"></div>
+      
+      <Card className="w-full max-w-2xl bg-white/95 backdrop-blur-sm shadow-2xl border-0">
+        <CardHeader className="text-center space-y-4 pb-6">
+          <div className="flex items-center justify-center gap-2">
+            <Utensils className="h-8 w-8 text-purple-600" />
+            <CardTitle className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              점심메뉴 룰렛
+            </CardTitle>
+            <Utensils className="h-8 w-8 text-purple-600" />
+          </div>
+          <CardDescription className="text-lg text-gray-600">
+            오늘 점심은 무엇을 먹을까요? 룰렛을 돌려보세요! 🎯
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-12">
+          <div className="relative flex justify-center">
+            <div className="relative w-96 h-96">
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-20">
+                <div className="relative">
+                  <div className="w-4 h-12 bg-gradient-to-b from-yellow-300 to-yellow-600 shadow-lg relative"
+                       style={{
+                         borderRadius: '50% 50% 50% 50% / 30% 30% 70% 70%',
+                       }}>
+                    <div className="absolute top-1.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-green-400 rounded-full opacity-90"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative w-full h-full">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-800 to-blue-900 rounded-full p-4 shadow-2xl">
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <div
+                      key={i}
+                      className="absolute w-2 h-2 bg-yellow-400 rounded-full"
+                      style={{
+                        top: '10px',
+                        left: '50%',
+                        transform: `translateX(-50%) rotate(${i * 30}deg) translateY(140px) rotate(-${i * 30}deg)`
+                      }}
+                    />
+                  ))}
+
+                  <div 
+                    ref={wheelRef}
+                    className="w-full h-full rounded-full overflow-hidden relative"
+                    style={{ transform: `rotate(${rotation}deg)` }}
+                  >
+                    <svg width="100%" height="100%" viewBox="0 0 400 400" className="w-full h-full">
+                      <g transform="translate(200,200)">
+                        {menus.map((menu, index) => {
+                          const angle = index * 36;
+                          const radian = (angle * Math.PI) / 180;
+                          const nextRadian = ((angle + 36) * Math.PI) / 180;
+                          const radius = 180;
+                          
+                          const x1 = Math.sin(radian) * radius;
+                          const y1 = -Math.cos(radian) * radius;
+                          const x2 = Math.sin(nextRadian) * radius;
+                          const y2 = -Math.cos(nextRadian) * radius;
+
+                          const colors = [
+                            '#ef4444', '#06b6d4', '#3b82f6', '#f97316', '#a855f7',
+                            '#22c55e', '#ef4444', '#eab308', '#3b82f6', '#14b8a6'
+                          ];
+
+                          const textAngle = angle + 18;
+                          const textRadian = (textAngle * Math.PI) / 180;
+                          const textRadius = 120;
+                          const textX = Math.sin(textRadian) * textRadius;
+                          const textY = -Math.cos(textRadian) * textRadius;
+
+                          return (
+                            <g key={index}>
+                              <path
+                                d={`M 0,0 L ${x1},${y1} A ${radius},${radius} 0 0,1 ${x2},${y2} Z`}
+                                fill={colors[index]}
+                                stroke="#000"
+                                strokeWidth="2"
+                              />
+                              <g transform={`translate(${textX}, ${textY})`}>
+                                <text
+                                  x="0"
+                                  y="-8"
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                  className="fill-white font-bold text-lg drop-shadow-lg"
+                                  transform={`rotate(${-rotation - textAngle})`}
+                                >
+                                  {menu.emoji}
+                                </text>
+                                <text
+                                  x="0"
+                                  y="12"
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                  className={`font-bold text-xs drop-shadow-lg ${
+                                    colors[index] === '#eab308' ? 'fill-gray-800' : 'fill-white'
+                                  }`}
+                                  transform={`rotate(${-rotation - textAngle})`}
+                                >
+                                  {menu.name}
+                                </text>
+                              </g>
+                            </g>
+                          );
+                        })}
+                      </g>
+                    </svg>
+                  </div>
+
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-blue-800 rounded-full flex items-center justify-center shadow-lg z-10">
+                    <Sparkles className="h-8 w-8 text-yellow-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
+                <div className="w-48 h-8 bg-gradient-to-r from-blue-800 to-blue-900 rounded-full shadow-lg"></div>
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-4 h-12 bg-gradient-to-b from-blue-100 to-blue-800 rounded-t-full"></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-center gap-4 pt-8">
+            <Button
+              onClick={spinWheel}
+              disabled={isSpinning}
+              size="lg"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:scale-100"
+            >
+              {isSpinning ? (
+                <>
+                  <RotateCcw className="mr-2 h-5 w-5 animate-spin" />
+                  돌리는 중...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  룰렛 돌리기!
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={resetWheel}
+              variant="outline"
+              size="lg"
+              className="border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105"
+            >
+              <RotateCcw className="mr-2 h-5 w-5" />
+              리셋
+            </Button>
+          </div>
+
+          {!showResult && (
+            <div className="text-center bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 shadow-lg border border-green-100 max-w-lg mx-auto">
+              <div className="flex items-center justify-center mb-4">
+                <span className="text-2xl mr-2">🌿</span>
+                <h3 className="text-lg font-bold text-green-700">오늘의 건강 팁</h3>
+                <span className="text-2xl ml-2">💚</span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {healthTips.map((tip, index) => (
+                  <div key={index} className="bg-white/80 rounded-xl p-3 border border-green-100">
+                    <div className="flex items-center mb-2">
+                      <span className="text-lg mr-2">{tip.icon}</span>
+                      <span className="font-semibold text-sm text-green-600">{tip.category}</span>
+                    </div>
+                    <p className="text-xs text-gray-700 leading-relaxed">{tip.tip}</p>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex items-center justify-center pt-3 space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span className="text-xs text-gray-600 font-medium">
+                  건강한 선택이 행복한 하루를 만들어요
+                </span>
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              </div>
+            </div>
+          )}
+
+          {showResult && (
+            <div className={`text-center transform transition-all duration-700 ${showResult ? 'scale-105 opacity-100' : 'scale-95 opacity-0'} pt-6`}>
+              <div className="bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200 rounded-3xl p-6 shadow-2xl max-w-md mx-auto border border-white/60 backdrop-blur-sm">
+                
+                <div className="mb-5">
+                  <h3 className="text-2xl font-bold text-purple-800 mb-2 tracking-wide drop-shadow-sm">
+                    ✨ 오늘의 선택 ✨
+                  </h3>
+                  <p className="text-sm font-medium text-purple-600 opacity-80">
+                    맛있는 식사 시간이에요
+                  </p>
+                </div>
+
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-purple-100">
+                  <div className="flex items-center justify-center mb-4">
+                    <span className="text-4xl mr-4 drop-shadow-lg">
+                      {menus.find(menu => menu.name === result?.name)?.emoji || '🍽️'}
+                    </span>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-purple-800 mb-1">
+                        {result?.name}
+                      </p>
+                      <div className="w-16 h-1 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full mx-auto"></div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
+                    <p className="text-sm text-gray-700 leading-relaxed font-medium text-center">
+                      {result?.message}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex justify-center items-center space-x-3">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-75"></div>
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-150"></div>
+                  </div>
+                  <div className="text-purple-600 text-sm font-medium">💜</div>
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-150"></div>
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-75"></div>
+                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default LunchRoulette;
