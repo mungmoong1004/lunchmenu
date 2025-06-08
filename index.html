@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>점심메뉴 룰렛</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,966 +15,463 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #9333ea 0%, #2563eb 50%, #06b6d4 100%);
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0e6ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
+            margin: 0;
+            padding: 20px;
+            background-image: radial-gradient(#d6c4ff 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        .sparkle-container {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 30;
-        }
-
-        .card {
-            width: 100%;
-            max-width: 672px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            border-radius: 12px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            border: none;
-        }
-
-        .card-header {
+        .title {
+            color: #7f3bff;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
             text-align: center;
-            padding: 1.5rem 1.5rem 1rem;
-        }
-
-        .header-title {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
         }
 
-        .title-text {
-            font-size: 2.25rem;
-            font-weight: bold;
-            background: linear-gradient(to right, #9333ea, #2563eb);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .title-icon {
+            margin: 0 8px;
+            font-size: 26px;
         }
 
         .subtitle {
-            font-size: 1.125rem;
-            color: #4b5563;
-        }
-
-        .card-content {
-            padding: 0 1.5rem 1.5rem;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+            text-align: center;
         }
 
         .roulette-container {
             position: relative;
-            display: flex;
-            justify-content: center;
-            margin-bottom: 3rem;
+            width: 380px;
+            height: 380px;
+            margin: 0 auto 30px;
         }
 
-        .wheel-wrapper {
-            position: relative;
-            width: 384px;
-            height: 384px;
+        .roulette-border {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #2850B8;
+            z-index: 1;
+        }
+
+        .roulette {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            top: 5%;
+            left: 5%;
+            border-radius: 50%;
+            z-index: 2;
+            transform-origin: center;
+            overflow: hidden;
         }
 
         .pointer {
             position: absolute;
-            top: 8px;
+            top: -35px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 20;
+            width: 30px;
+            height: 70px;
+            background-color: #FFD700;
+            border-radius: 15px 15px 0 0;
+            z-index: 4;
         }
 
-        .pointer-shape {
-            width: 16px;
-            height: 48px;
-            background: linear-gradient(to bottom, #fde047, #eab308);
-            border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            position: relative;
-        }
-
-        .pointer-dot {
+        .center-star {
             position: absolute;
-            top: 6px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px;
-            height: 6px;
-            background: #4ade80;
+            width: 60px;
+            height: 60px;
+            background-color: #2850B8;
             border-radius: 50%;
-            opacity: 0.9;
-        }
-
-        .wheel-outer {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, #1e40af, #1e3a8a);
-            border-radius: 50%;
-            padding: 1rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-
-        .decoration-dots {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: #fbbf24;
-            border-radius: 50%;
-        }
-
-        .wheel-inner {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            overflow: hidden;
-            position: relative;
-            transition: transform 0.1s ease;
-        }
-
-        .wheel-center {
-            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 64px;
-            height: 64px;
-            background: #1e40af;
-            border-radius: 50%;
+            z-index: 3;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            z-index: 10;
         }
 
-        .wheel-base {
+        .star {
+            color: #FFD700;
+            font-size: 30px;
+        }
+
+        .slice {
             position: absolute;
-            bottom: -64px;
-            left: 50%;
-            transform: translateX(-50%);
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            transform-origin: center;
         }
 
-        .base-bottom {
-            width: 192px;
-            height: 32px;
-            background: linear-gradient(to right, #1e40af, #1e3a8a);
-            border-radius: 9999px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .base-pillar {
+        .menu-text {
             position: absolute;
-            top: -32px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 16px;
-            height: 48px;
-            background: linear-gradient(to bottom, #dbeafe, #1e40af);
-            border-radius: 9999px 9999px 0 0;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 3rem;
-        }
-
-        .btn {
-            padding: 0.75rem 2rem;
-            border-radius: 9999px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            border: none;
-            font-size: 1rem;
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .btn-primary {
-            background: linear-gradient(to right, #9333ea, #2563eb);
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: linear-gradient(to right, #7c3aed, #1d4ed8);
-        }
-
-        .btn-outline {
-            background: white;
-            border: 2px solid #d1d5db;
-            color: #374151;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-outline:hover {
-            border-color: #9ca3af;
-        }
-
-        .health-tips {
-            text-align: center;
-            background: linear-gradient(to right, #f0fdf4, #eff6ff);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid #dcfce7;
-            max-width: 512px;
-            margin: 0 auto 3rem;
-        }
-
-        .health-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
-        }
-
-        .health-title {
-            font-size: 1.125rem;
-            font-weight: bold;
-            color: #15803d;
-            margin: 0 0.5rem;
-        }
-
-        .tips-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-        }
-
-        @media (min-width: 768px) {
-            .tips-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        .tip-card {
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 0.75rem;
-            padding: 0.75rem;
-            border: 1px solid #dcfce7;
-        }
-
-        .tip-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .tip-category {
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: #16a34a;
-            margin-left: 0.5rem;
-        }
-
-        .tip-text {
-            font-size: 0.75rem;
-            color: #374151;
-            line-height: 1.5;
-        }
-
-        .health-footer {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-
-        .footer-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-
-        .footer-text {
-            font-size: 0.75rem;
-            color: #4b5563;
-            font-weight: 500;
-        }
-
-        .result-popup {
-            text-align: center;
-            background: linear-gradient(135deg, #fce7f3, #e0e7ff, #e0f2fe);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            max-width: 448px;
-            margin: 0 auto;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(8px);
-            transform: scale(1.05);
-            opacity: 1;
-            transition: all 0.7s;
-        }
-
-        .result-header {
-            margin-bottom: 1.25rem;
-        }
-
-        .result-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #581c87;
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.025em;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .result-subtitle {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #7c3aed;
-            opacity: 0.8;
-        }
-
-        .result-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(8px);
-            border-radius: 1rem;
-            padding: 1.25rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid #c084fc;
-        }
-
-        .result-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
-        }
-
-        .result-emoji {
-            font-size: 2.5rem;
-            margin-right: 1rem;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .result-menu {
-            text-align: center;
-        }
-
-        .result-name {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #581c87;
-            margin-bottom: 0.25rem;
-        }
-
-        .result-line {
-            width: 64px;
-            height: 4px;
-            background: linear-gradient(to right, #f9a8d4, #c084fc);
-            border-radius: 9999px;
-            margin: 0 auto;
-        }
-
-        .result-message {
-            background: linear-gradient(to right, #faf5ff, #fdf2f8);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            border: 1px solid #c084fc;
-        }
-
-        .message-text {
-            font-size: 0.875rem;
-            color: #374151;
-            line-height: 1.5;
-            font-weight: 500;
-            text-align: center;
-        }
-
-        .result-footer {
-            margin-top: 1.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-        }
-
-        .footer-dots {
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        .pulse-dot:nth-child(2) {
-            animation-delay: 75ms;
-        }
-
-        .pulse-dot:nth-child(3) {
-            animation-delay: 150ms;
-        }
-
-        .footer-heart {
-            color: #7c3aed;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .icon {
+            font-weight: 700;
+            color: #333;
+            font-size: 15px;
+            line-height: 1.2;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+            transform-origin: center;
             width: 20px;
-            height: 20px;
+            text-align: center;
+            left: 50%;
+            margin-left: -10px;
         }
 
-        .icon-lg {
-            width: 32px;
-            height: 32px;
+        .menu-icon {
+            font-size: 18px;
+            margin-top: 5px;
+            display: block;
         }
 
-        .spin {
-            animation: spin 1s linear infinite;
+        .base-support {
+            width: 120px;
+            height: 25px;
+            background-color: #2850B8;
+            border-radius: 15px;
+            margin: 0 auto 30px;
         }
 
-        .hidden {
+        .button-area {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .spin-button {
+            background-color: #7f3bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spin-button:hover {
+            background-color: #6a2fe0;
+        }
+
+        .spin-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .reset-button {
+            background-color: #ffffff;
+            color: #666;
+            border: 1px solid #ddd;
+            padding: 12px;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reset-button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .button-icon {
+            margin-right: 8px;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            padding: 12px 25px;
+            border-radius: 50px;
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             display: none;
         }
 
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .decoration-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #FFD700;
+            border-radius: 50%;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .today-result {
+            background-color: white;
+            border-radius: 50px;
+            padding: 12px 25px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #333;
         }
 
-        @keyframes sparkle {
-            0% { opacity: 1; transform: scale(0) rotate(0deg); }
-            50% { opacity: 1; transform: scale(1) rotate(180deg); }
-            100% { opacity: 0; transform: scale(0) rotate(360deg); }
+        .result-icon {
+            margin-left: 8px;
+            font-size: 18px;
+        }
+
+        @media (max-width: 500px) {
+            .roulette-container {
+                width: 320px;
+                height: 320px;
+            }
+
+            .center-star {
+                width: 50px;
+                height: 50px;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+            
+            .menu-text {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="sparkle-container" id="sparkleContainer"></div>
+    <!-- 장식용 점들 -->
+    <div class="decoration-dot" style="top: 40px; right: 20%;"></div>
+    <div class="decoration-dot" style="top: 100px; left: 20%;"></div>
+    <div class="decoration-dot" style="bottom: 30%; right: 25%;"></div>
+    <div class="decoration-dot" style="bottom: 20%; left: 30%;"></div>
+    <div class="decoration-dot" style="bottom: 10%; right: 10%;"></div>
+
+    <h1 class="title">
+        <span class="title-icon">🍽️</span>
+        점심메뉴 룰렛
+        <span class="title-icon">🍽️</span>
+    </h1>
+    <p class="subtitle">오늘 점심은 무엇을 먹을까요? 룰렛을 돌려보세요! 🍲</p>
     
-    <div class="card">
-        <div class="card-header">
-            <div class="header-title">
-                <svg class="icon-lg" fill="#9333ea" viewBox="0 0 24 24">
-                    <path d="M8.1 13.34l2.83-2.83L3.91 3.5a4.008 4.008 0 0 0 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L14.89 11.53z"/>
-                </svg>
-                <h1 class="title-text">점심메뉴 룰렛</h1>
-                <svg class="icon-lg" fill="#9333ea" viewBox="0 0 24 24">
-                    <path d="M8.1 13.34l2.83-2.83L3.91 3.5a4.008 4.008 0 0 0 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L14.89 11.53z"/>
-                </svg>
-            </div>
-            <p class="subtitle">오늘 점심은 무엇을 먹을까요? 룰렛을 돌려보세요! 🎯</p>
-        </div>
-
-        <div class="card-content">
-            <div class="roulette-container">
-                <div class="wheel-wrapper">
-                    <div class="pointer">
-                        <div class="pointer-shape">
-                            <div class="pointer-dot"></div>
-                        </div>
-                    </div>
-
-                    <div class="wheel-outer">
-                        <div class="wheel-inner" id="wheel">
-                            <svg width="100%" height="100%" viewBox="0 0 400 400">
-                                <g transform="translate(200,200)" id="wheelSvg">
-                                    <!-- 룰렛 섹션들이 여기에 동적으로 생성됩니다 -->
-                                </g>
-                            </svg>
-                        </div>
-
-                        <div class="wheel-center">
-                            <svg class="icon-lg" fill="#fbbf24" viewBox="0 0 24 24">
-                                <path d="M12 2l2.09 6.26L20 8l-5.91.74L12 15l-2.09-6.26L4 8l5.91.74L12 2z"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <div class="wheel-base">
-                        <div class="base-bottom"></div>
-                        <div class="base-pillar"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="controls">
-                <button class="btn btn-primary" id="spinBtn">
-                    <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l2.09 6.26L20 8l-5.91.74L12 15l-2.09-6.26L4 8l5.91.74L12 2z"/>
-                    </svg>
-                    <span id="spinText">룰렛 돌리기!</span>
-                </button>
-
-                <button class="btn btn-outline" id="resetBtn">
-                    <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M4 4v5h.582l.114-.131c.55-.611 1.154-1.137 1.804-1.57L4 4zm0 7v5h.582l.114-.131c.55-.611 1.154-1.137 1.804-1.57L4 11zm16-7v5h-.582l-.114-.131c-.55-.611-1.154-1.137-1.804-1.57L20 4zm0 7v5h-.582l-.114-.131c-.55-.611-1.154-1.137-1.804-1.57L20 11z"/>
-                    </svg>
-                    리셋
-                </button>
-            </div>
-
-            <div class="health-tips" id="healthTips">
-                <div class="health-header">
-                    <span style="font-size: 1.5rem;">🌿</span>
-                    <h3 class="health-title">오늘의 건강 팁</h3>
-                    <span style="font-size: 1.5rem;">💚</span>
-                </div>
-                
-                <div class="tips-grid">
-                    <div class="tip-card">
-                        <div class="tip-header">
-                            <span style="font-size: 1.125rem;">🥗</span>
-                            <span class="tip-category">균형 식사</span>
-                        </div>
-                        <p class="tip-text">탄수화물, 단백질, 채소를 골고루 섭취하면 하루 종일 에너지가 넘쳐요!</p>
-                    </div>
-                    <div class="tip-card">
-                        <div class="tip-header">
-                            <span style="font-size: 1.125rem;">💧</span>
-                            <span class="tip-category">수분 섭취</span>
-                        </div>
-                        <p class="tip-text">하루 8잔의 물로 몸속 독소를 깔끔하게 배출하세요!</p>
-                    </div>
-                    <div class="tip-card">
-                        <div class="tip-header">
-                            <span style="font-size: 1.125rem;">🚶‍♂️</span>
-                            <span class="tip-category">꾸준한 운동</span>
-                        </div>
-                        <p class="tip-text">하루 30분 걷기만 해도 심장병, 당뇨 예방에 큰 도움이 됩니다!</p>
-                    </div>
-                    <div class="tip-card">
-                        <div class="tip-header">
-                            <span style="font-size: 1.125rem;">😴</span>
-                            <span class="tip-category">충분한 수면</span>
-                        </div>
-                        <p class="tip-text">하루 7~8시간 숙면으로 면역력을 높이고 스트레스를 해소하세요!</p>
-                    </div>
-                </div>
-                
-                <div class="health-footer">
-                    <div class="footer-dot" style="background: #4ade80;"></div>
-                    <span class="footer-text">건강한 선택이 행복한 하루를 만들어요</span>
-                    <div class="footer-dot" style="background: #3b82f6;"></div>
-                </div>
-            </div>
-
-            <div class="result-popup hidden" id="resultPopup">
-                <div class="result-header">
-                    <h3 class="result-title">✨ 오늘의 선택 ✨</h3>
-                    <p class="result-subtitle">맛있는 식사 시간이에요</p>
-                </div>
-
-                <div class="result-card">
-                    <div class="result-content">
-                        <span class="result-emoji" id="resultEmoji">🍽️</span>
-                        <div class="result-menu">
-                            <p class="result-name" id="resultName">메뉴명</p>
-                            <div class="result-line"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="result-message">
-                        <p class="message-text" id="resultMessage">감성적인 메시지가 여기에 표시됩니다</p>
-                    </div>
-                </div>
-
-                <div class="result-footer">
-                    <div class="footer-dots">
-                        <div class="pulse-dot" style="background: #f472b6;"></div>
-                        <div class="pulse-dot" style="background: #a855f7;"></div>
-                        <div class="pulse-dot" style="background: #6366f1;"></div>
-                    </div>
-                    <div class="footer-heart">💜</div>
-                    <div class="footer-dots">
-                        <div class="pulse-dot" style="background: #6366f1;"></div>
-                        <div class="pulse-dot" style="background: #a855f7;"></div>
-                        <div class="pulse-dot" style="background: #f472b6;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="roulette-container">
+        <div class="pointer"></div>
+        <div class="roulette-border"></div>
+        <div class="roulette" id="roulette"></div>
+        <div class="center-star"><div class="star">★</div></div>
+    </div>
+    
+    <div class="base-support"></div>
+    
+    <div class="button-area">
+        <button class="spin-button" id="spinButton">
+            <span class="button-icon">★</span>룰렛 돌리기
+        </button>
+        <button class="reset-button" id="resetButton">↺</button>
+    </div>
+    
+    <div class="today-result" id="todayResult" style="display: none;">
+        오늘의 점심: <span id="resultMenu">샤브샤브</span> <span class="result-icon" id="resultIcon">✏️</span>
     </div>
 
     <script>
-        const menus = [
-            { 
-                name: '김치찌개', 
-                emoji: '🌶️', 
-                color: '#ef4444',
-                messages: [
-                    "뜨끈한 국물이 몸과 마음을 따뜻하게 해줄 거예요 💕",
-                    "오늘 같은 날엔 매콤한 김치찌개가 딱이죠! 🔥",
-                    "할머니가 끓여주던 그 맛이 그리워지는 날이네요 👵💝",
-                    "김치의 깊은 맛이 당신의 하루를 완성시켜줄 거예요 ✨"
-                ]
-            },
-            { 
-                name: '순대국', 
-                emoji: '🍲', 
-                color: '#06b6d4',
-                messages: [
-                    "진한 국물이 지친 당신을 위로해줄 거예요 🤗",
-                    "따뜻한 순대국 한 그릇이면 모든 피로가 사라져요 😌",
-                    "오늘은 든든한 한 끼가 필요한 날이에요! 💪",
-                    "깊고 진한 맛이 당신의 마음까지 채워줄 거예요 ❤️"
-                ]
-            },
-            { 
-                name: '부대찌개', 
-                emoji: '🍜', 
-                color: '#3b82f6',
-                messages: [
-                    "알록달록한 재료들이 당신의 기분을 밝게 만들어줄 거예요 🌈",
-                    "친구들과 나눠먹고 싶은 그런 맛이죠! 👫",
-                    "한 숟가락에 담긴 추억의 맛을 느껴보세요 🥄💭",
-                    "푸짐한 부대찌개로 오늘 하루를 든든하게! 🎉"
-                ]
-            },
-            { 
-                name: '떡볶이', 
-                emoji: '🍘', 
-                color: '#f97316',
-                messages: [
-                    "쫄깃한 떡이 당신의 스트레스를 모두 날려버릴 거예요 💨",
-                    "달콤매콤한 맛이 어린 시절로 데려가줄 거예요 🎈",
-                    "오늘은 간식이 아닌 당당한 한 끼! 😋",
-                    "빨간 소스가 당신의 하루에 활력을 불어넣어줄 거예요 🔴✨"
-                ]
-            },
-            { 
-                name: '샤브샤브', 
-                emoji: '🥩', 
-                color: '#a855f7',
-                messages: [
-                    "신선한 채소와 고기가 당신을 건강하게 만들어줄 거예요 🥬💚",
-                    "정성스럽게 담근 한 입이 마음까지 정화시켜줄 거예요 🧘‍♀️",
-                    "오늘은 자신에게 특별한 선물을 해주세요 🎁",
-                    "깔끔하고 담백한 맛이 당신의 품격을 높여줄 거예요 ✨👑"
-                ]
-            },
-            { 
-                name: '한식', 
-                emoji: '🍚', 
-                color: '#22c55e',
-                messages: [
-                    "정갈한 한상차림이 당신의 마음을 편안하게 해줄 거예요 🕊️",
-                    "어머니의 손맛이 그리운 오늘, 한식이 딱이에요 👩‍🍳💕",
-                    "건강한 밥상이 당신의 몸과 마음을 챙겨줄 거예요 🌿",
-                    "전통의 맛이 당신의 뿌리를 생각나게 해줄 거예요 🏠"
-                ]
-            },
-            { 
-                name: '중식', 
-                emoji: '🥢', 
-                color: '#ef4444',
-                messages: [
-                    "기름진 맛이 당신의 스트레스를 달래줄 거예요 😊",
-                    "오늘은 조금 특별한 맛을 원하시는군요! 🎭",
-                    "볶음밥 한 접시면 모든 고민이 해결될 거예요 🍛✨",
-                    "중국집 특유의 그 맛이 향수를 불러일으킬 거예요 🏮"
-                ]
-            },
-            { 
-                name: '일식', 
-                emoji: '🍣', 
-                color: '#eab308',
-                messages: [
-                    "신선하고 깔끔한 맛이 당신의 감각을 깨워줄 거예요 🌸",
-                    "정성스럽게 만든 한 점 한 점이 예술이에요 🎨",
-                    "오늘은 자신을 위한 특별한 시간을 가져보세요 ⛩️",
-                    "섬세한 맛이 당신의 하루를 우아하게 만들어줄 거예요 🎋"
-                ]
-            },
-            { 
-                name: '양식', 
-                emoji: '🍝', 
-                color: '#3b82f6',
-                messages: [
-                    "이국적인 맛이 당신의 일상에 변화를 줄 거예요 🌍",
-                    "로맨틱한 분위기 속에서 즐기는 한 끼! 🕯️💕",
-                    "오늘은 조금 더 세련된 맛을 원하시는군요 🥂",
-                    "서양의 풍미가 당신의 마음을 설레게 해줄 거예요 💃"
-                ]
-            },
-            { 
-                name: '기타', 
-                emoji: '🍕', 
-                color: '#14b8a6',
-                messages: [
-                    "새로운 도전이 당신의 하루를 특별하게 만들어줄 거예요 🚀",
-                    "예상치 못한 맛의 발견이 기다리고 있어요! 🔍✨",
-                    "오늘은 평소와 다른 선택을 해보는 게 어떨까요? 🎲",
-                    "모험심이 가득한 당신에게 딱 맞는 선택이에요! 🗺️💫"
-                ]
-            }
-        ];
+        document.addEventListener('DOMContentLoaded', function() {
+            // 메뉴 목록 및 아이콘
+            const menus = [
+                { name: '김치찌개', color: '#FF6B6B', icon: '🍲' },
+                { name: '순대국', color: '#4ECDC4', icon: '🥘' },
+                { name: '부대찌개', color: '#FF9F1C', icon: '🌶️' },
+                { name: '떡볶이', color: '#FF7E79', icon: '🍡' },
+                { name: '샤브샤브', color: '#4267B2', icon: '✏️' },
+                { name: '한식', color: '#4CAF50', icon: '🍚' },
+                { name: '중식', color: '#FF5722', icon: '🥟' },
+                { name: '일식', color: '#9C27B0', icon: '🍣' },
+                { name: '양식', color: '#3F51B5', icon: '🍕' },
+                { name: '기타', color: '#FF9800', icon: '🍴' }
+            ];
 
-        let isSpinning = false;
-        let rotation = 0;
-        let animationId = null;
-
-        const wheel = document.getElementById('wheel');
-        const wheelSvg = document.getElementById('wheelSvg');
-        const spinBtn = document.getElementById('spinBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const spinText = document.getElementById('spinText');
-        const healthTips = document.getElementById('healthTips');
-        const resultPopup = document.getElementById('resultPopup');
-        const resultEmoji = document.getElementById('resultEmoji');
-        const resultName = document.getElementById('resultName');
-        const resultMessage = document.getElementById('resultMessage');
-        const sparkleContainer = document.getElementById('sparkleContainer');
-
-        function easeOutExpo(t) {
-            return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-        }
-
-        function easeInOutCubic(t) {
-            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-        }
-
-        function createSparkles() {
-            for (let i = 0; i < 30; i++) {
-                const sparkle = document.createElement('div');
-                sparkle.style.position = 'absolute';
-                sparkle.style.width = '12px';
-                sparkle.style.height = '12px';
-                sparkle.style.background = 'linear-gradient(45deg, #fbbf24, #f97316)';
-                sparkle.style.borderRadius = '50%';
-                sparkle.style.left = Math.random() * 100 + '%';
-                sparkle.style.top = Math.random() * 100 + '%';
-                sparkle.style.animation = 'sparkle ' + (2 + Math.random() * 2) + 's ease-out forwards';
-                sparkle.style.animationDelay = Math.random() * 0.5 + 's';
-                sparkle.style.pointerEvents = 'none';
-                sparkle.style.zIndex = '30';
-                
-                sparkleContainer.appendChild(sparkle);
-                
-                setTimeout(function() { 
-                    if (sparkle.parentNode) {
-                        sparkle.remove(); 
-                    }
-                }, 4000);
-            }
-        }
-
-        function initWheel() {
-            wheelSvg.innerHTML = '';
+            const roulette = document.getElementById('roulette');
+            const spinButton = document.getElementById('spinButton');
+            const resetButton = document.getElementById('resetButton');
+            const todayResult = document.getElementById('todayResult');
+            const resultMenu = document.getElementById('resultMenu');
+            const resultIcon = document.getElementById('resultIcon');
             
-            menus.forEach(function(menu, index) {
-                const angle = index * 36;
-                const radian = (angle * Math.PI) / 180;
-                const nextRadian = ((angle + 36) * Math.PI) / 180;
-                const radius = 180;
+            let isSpinning = false;
+            let currentRotation = 0;
+            
+            // 룰렛 생성
+            function createRoulette() {
+                // 기존 요소 제거
+                roulette.innerHTML = '';
                 
-                const x1 = Math.sin(radian) * radius;
-                const y1 = -Math.cos(radian) * radius;
-                const x2 = Math.sin(nextRadian) * radius;
-                const y2 = -Math.cos(nextRadian) * radius;
-
-                const textAngle = angle + 18;
-                const textRadian = (textAngle * Math.PI) / 180;
-                const textRadius = 120;
-                const textX = Math.sin(textRadian) * textRadius;
-                const textY = -Math.cos(textRadian) * textRadius;
-
-                // 섹션 생성
-                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.setAttribute('d', 'M 0,0 L ' + x1 + ',' + y1 + ' A ' + radius + ',' + radius + ' 0 0,1 ' + x2 + ',' + y2 + ' Z');
-                path.setAttribute('fill', menu.color);
-                path.setAttribute('stroke', '#000');
-                path.setAttribute('stroke-width', '2');
-                wheelSvg.appendChild(path);
-
-                // 텍스트 그룹
-                const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                textGroup.setAttribute('transform', 'translate(' + textX + ', ' + textY + ')');
-
-                // 이모지
-                const emojiText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                emojiText.setAttribute('x', '0');
-                emojiText.setAttribute('y', '-8');
-                emojiText.setAttribute('text-anchor', 'middle');
-                emojiText.setAttribute('dominant-baseline', 'middle');
-                emojiText.setAttribute('class', 'wheel-emoji');
-                emojiText.style.fill = 'white';
-                emojiText.style.fontWeight = 'bold';
-                emojiText.style.fontSize = '18px';
-                emojiText.style.filter = 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))';
-                emojiText.textContent = menu.emoji;
-                textGroup.appendChild(emojiText);
-
-                // 메뉴명
-                const nameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                nameText.setAttribute('x', '0');
-                nameText.setAttribute('y', '12');
-                nameText.setAttribute('text-anchor', 'middle');
-                nameText.setAttribute('dominant-baseline', 'middle');
-                nameText.setAttribute('class', 'wheel-name');
-                nameText.style.fill = menu.color === '#eab308' ? '#1f2937' : 'white';
-                nameText.style.fontWeight = 'bold';
-                nameText.style.fontSize = '12px';
-                nameText.style.filter = 'drop-shadow(1px 1px 2px rgba(0,0,0,0.5))';
-                nameText.textContent = menu.name;
-                textGroup.appendChild(nameText);
-
-                wheelSvg.appendChild(textGroup);
-            });
-        }
-
-        function updateTextRotation() {
-            const textElements = document.querySelectorAll('.wheel-emoji, .wheel-name');
-            textElements.forEach(function(text, index) {
-                const sectionIndex = Math.floor(index / 2);
-                const angle = sectionIndex * 36 + 18;
-                text.setAttribute('transform', 'rotate(' + (-rotation - angle) + ')');
-            });
-        }
-
-        function animateWheel(startRotation, endRotation, duration, easingFunc) {
-            return new Promise(function(resolve) {
-                const startTime = Date.now();
+                const sliceAngle = 360 / menus.length;
                 
-                function animate() {
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
+                for (let i = 0; i < menus.length; i++) {
+                    const menu = menus[i];
+                    const angle = i * sliceAngle;
                     
-                    const easedProgress = easingFunc(progress);
-                    rotation = startRotation + (endRotation - startRotation) * easedProgress;
+                    // 파이 조각 생성
+                    const slice = document.createElement('div');
+                    slice.className = 'slice';
                     
-                    wheel.style.transform = 'rotate(' + rotation + 'deg)';
-                    updateTextRotation();
+                    // SVG로 부채꼴 생성
+                    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    svg.setAttribute("width", "100%");
+                    svg.setAttribute("height", "100%");
+                    svg.style.position = "absolute";
+                    svg.style.transform = `rotate(${angle}deg)`;
                     
-                    if (progress < 1) {
-                        animationId = requestAnimationFrame(animate);
-                    } else {
-                        resolve();
-                    }
+                    // 부채꼴 계산
+                    const centerX = 171; // 컨테이너 크기의 절반
+                    const centerY = 171;
+                    const radius = 171;
+                    
+                    // 부채꼴 경로 계산
+                    const startAngle = 0;
+                    const endAngle = sliceAngle * Math.PI / 180;
+                    
+                    const x1 = centerX + radius * Math.cos(startAngle);
+                    const y1 = centerY + radius * Math.sin(startAngle);
+                    const x2 = centerX + radius * Math.cos(endAngle);
+                    const y2 = centerY + radius * Math.sin(endAngle);
+                    
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    const d = [
+                        "M", centerX, centerY,
+                        "L", x1, y1,
+                        "A", radius, radius, 0, 0, 1, x2, y2,
+                        "Z"
+                    ].join(" ");
+                    
+                    path.setAttribute("d", d);
+                    path.setAttribute("fill", menu.color);
+                    
+                    svg.appendChild(path);
+                    slice.appendChild(svg);
+                    
+                    // 텍스트와 아이콘을 하나의 그룹으로 추가
+                    const labelGroup = document.createElement('div');
+                    labelGroup.style.position = 'absolute';
+                    labelGroup.style.top = '0';
+                    labelGroup.style.left = '0';
+                    labelGroup.style.width = '100%';
+                    labelGroup.style.height = '100%';
+                    labelGroup.style.transformOrigin = 'center';
+                    labelGroup.style.transform = `rotate(${angle}deg)`;
+                    
+                    // 텍스트 요소 추가
+                    const textElem = document.createElement('div');
+                    textElem.className = 'menu-text';
+                    textElem.style.top = '50px';
+                    textElem.style.transform = `rotate(${sliceAngle/2}deg)`;
+                    
+                    // 메뉴 이름 (항상 세로로 배치)
+                    const textContent = menu.name.split('').join('<br>');
+                    textElem.innerHTML = textContent + '<br>' + menu.icon;
+                    
+                    labelGroup.appendChild(textElem);
+                    slice.appendChild(labelGroup);
+                    
+                    roulette.appendChild(slice);
                 }
-                
-                animationId = requestAnimationFrame(animate);
-            });
-        }
-
-        function spinWheel() {
-            if (isSpinning) return;
-            
-            isSpinning = true;
-            healthTips.classList.add('hidden');
-            resultPopup.classList.add('hidden');
-            
-            spinBtn.disabled = true;
-            spinText.textContent = '돌리는 중...';
-            spinBtn.querySelector('.icon').classList.add('spin');
-
-            if (navigator.vibrate) {
-                navigator.vibrate([50, 100, 50]);
             }
 
-            const minSpins = 8;
-            const maxSpins = 12;
-            const spins = minSpins + Math.random() * (maxSpins - minSpins);
-            const finalAngle = Math.random() * 360;
-            const totalRotation = rotation + (spins * 360) + finalAngle;
-            
-            Promise.resolve()
-                .then(function() {
-                    return animateWheel(rotation, rotation + 360, 800, easeInOutCubic);
-                })
-                .then(function() {
-                    return animateWheel(rotation + 360, rotation + (spins - 2) * 360, 1200, function(t) { return t; });
-                })
-                .then(function() {
-                    return animateWheel(rotation + (spins - 2) * 360, totalRotation, 3000, easeOutExpo);
-                })
-                .then(function() {
-                    const finalRotation = totalRotation % 360;
-                    const adjustedRotation = (360 - finalRotation) % 360;
-                    const selectedIndex = Math.floor(adjustedRotation / 36);
-                    const selectedMenu = menus[selectedIndex];
-                    
-                    const randomMessage = selectedMenu.messages[Math.floor(Math.random() * selectedMenu.messages.length)];
-
-                    setTimeout(function() {
-                        resultEmoji.textContent = selectedMenu.emoji;
-                        resultName.textContent = selectedMenu.name;
-                        resultMessage.textContent = randomMessage;
+            // 룰렛 회전
+            function spinRoulette() {
+                if (isSpinning) return;
+                
+                isSpinning = true;
+                spinButton.disabled = true;
+                todayResult.style.display = 'none';
+                
+                // 현재 회전 각도 저장
+                const prevRotation = currentRotation;
+                
+                // 회전할 각도 결정 (5-10바퀴 + 랜덤 각도)
+                const spins = 5 + Math.random() * 5;
+                const extraDegrees = Math.random() * 360;
+                const totalRotation = prevRotation + (spins * 360) + extraDegrees;
+                currentRotation = totalRotation % 360;
+                
+                // 애니메이션 설정
+                gsap.to(roulette, {
+                    rotation: totalRotation,
+                    duration: 5,
+                    ease: "power3.out",
+                    onComplete: function() {
+                        const sliceAngle = 360 / menus.length;
+                        // 현재 상단을 가리키는 슬라이스 인덱스 계산
+                        const normalizedRotation = (totalRotation % 360);
+                        const winningIndex = Math.floor(normalizedRotation / sliceAngle);
+                        const actualIndex = (menus.length - winningIndex) % menus.length;
                         
-                        resultPopup.classList.remove('hidden');
-                        createSparkles();
-                        
-                        if (navigator.vibrate) {
-                            navigator.vibrate([100, 50, 100, 50, 200]);
-                        }
+                        // 결과 표시
+                        resultMenu.textContent = menus[actualIndex].name;
+                        resultIcon.textContent = menus[actualIndex].icon;
+                        todayResult.style.display = 'inline-flex';
                         
                         isSpinning = false;
-                        spinBtn.disabled = false;
-                        spinText.textContent = '룰렛 돌리기!';
-                        spinBtn.querySelector('.icon').classList.remove('spin');
-                    }, 500);
-                })
-                .catch(function(error) {
-                    isSpinning = false;
-                    spinBtn.disabled = false;
-                    spinText.textContent = '룰렛 돌리기!';
-                    spinBtn.querySelector('.icon').classList.remove('spin');
+                        spinButton.disabled = false;
+                    }
                 });
-        }
-
-        function resetWheel() {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
             }
-            
-            rotation = 0;
-            wheel.style.transform = 'rotate(0deg)';
-            updateTextRotation();
-            
-            healthTips.classList.remove('hidden');
-            resultPopup.classList.add('hidden');
-            
-            isSpinning = false;
-            spinBtn.disabled = false;
-            spinText.textContent = '룰렛 돌리기!';
-            spinBtn.querySelector('.icon').classList.remove('spin');
-        }
 
-        // 이벤트 리스너
-        spinBtn.addEventListener('click', spinWheel);
-        resetBtn.addEventListener('click', resetWheel);
+            // 룰렛 리셋
+            function resetRoulette() {
+                if (isSpinning) return;
+                
+                gsap.to(roulette, {
+                    rotation: 0,
+                    duration: 1,
+                    ease: "power1.out"
+                });
+                
+                currentRotation = 0;
+                todayResult.style.display = 'none';
+            }
 
-        // 초기화
-        initWheel();
+            // 초기화
+            createRoulette();
+            
+            // 버튼 이벤트 리스너
+            spinButton.addEventListener('click', spinRoulette);
+            resetButton.addEventListener('click', resetRoulette);
+            
+            // 장식용 점들 애니메이션
+            const dots = document.querySelectorAll('.decoration-dot');
+            dots.forEach(dot => {
+                gsap.to(dot, {
+                    y: -10,
+                    duration: 1.5,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut",
+                    delay: Math.random() * 1
+                });
+            });
+        });
     </script>
 </body>
 </html>
